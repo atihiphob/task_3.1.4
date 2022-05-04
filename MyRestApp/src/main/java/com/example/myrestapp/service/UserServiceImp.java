@@ -1,58 +1,58 @@
 package com.example.myrestapp.service;
 
+
 import com.example.myrestapp.model.User;
-import com.example.myrestapp.repository.UserRep;
+import com.example.myrestapp.repository.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 
+import javax.persistence.Table;
 import java.util.List;
+
+
 @Service ("userEntityServiceImp")
 public class UserServiceImp implements UserService{
-    private final UserRep userRep;
+    private final UserDao userRep;
     @Autowired
-    public UserServiceImp(UserRep userRep) {
+    public UserServiceImp(UserDao userRep) {
         this.userRep = userRep;
     }
 
-    private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder(12);
-
+    @Transactional
     @Override
     public User add(User user) {
-        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
-        return userRep.save(user);
+        return userRep.add(user);
     }
 
+    @Transactional
     @Override
     public User update(User user, int id) {
-        User existingUser = userRep.findById(id).orElseThrow(
-                ()-> new RuntimeException("User is not found with update method in UserServiceImp class"));
+        User existingUser = userRep.getUserById(id);
         existingUser.setName(user.getName());
         existingUser.setSecondName(user.getSecondName());
         existingUser.setUsername(user.getUsername());
         existingUser.setRoles(user.getRoles());
-        return userRep.save(existingUser);
+        return userRep.add(existingUser);
     }
 
+    @Transactional
     @Override
     public void delete(int id) {
-        User existingUser = userRep.findById(id).orElseThrow(
-                ()-> new RuntimeException("User is not found with update method in UserServiceImp class"));
-        userRep.delete(existingUser);
+        userRep.remove(id);
     }
 
     @Override
     public List<User> getAllUsers() {
-        return userRep.findAll();
+        return userRep.getAllUsers();
     }
 
     @Override
     public User getById(int id) {
-        return userRep.findById(id).orElseThrow(
-                ()-> new RuntimeException("User is not found with update method in UserServiceImp class"));
+        return userRep.getUserById(id);
     }
 
     @Override
